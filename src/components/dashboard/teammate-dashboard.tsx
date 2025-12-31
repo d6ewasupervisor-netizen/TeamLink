@@ -1,15 +1,52 @@
-import type { User } from "@/lib/types";
-import { mockCAFs, mockImpacts, mockRecognitions } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import type { User, CallOut, Recognition, CAF } from "@/lib/types";
+import { api } from "@/services/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileSignature, Siren, Sparkles } from "lucide-react";
+import { FileSignature, Siren, Sparkles, Plus } from "lucide-react";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ImpactForm } from "@/components/forms/impact-form";
+import { useToast } from "@/hooks/use-toast";
 
 export function TeammateDashboard({ user }: { user: User }) {
-  const pendingCAFs = mockCAFs.filter(caf => caf.userId === user.uid && caf.status === 'PENDING_ASSOCIATE_SIG');
-  const myImpacts = mockImpacts.filter(i => i.userId === user.uid).slice(0, 3);
-  const myRecognitions = mockRecognitions.filter(r => r.userId === user.uid && r.isApproved).slice(0, 3);
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [cafs, setCafs] = useState<CAF[]>([]);
+  const [impacts, setImpacts] = useState<CallOut[]>([]);
+  const [recognitions, setRecognitions] = useState<Recognition[]>([]);
+  const [isImpactOpen, setIsImpactOpen] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [fetchedCAFs, fetchedImpacts, fetchedRecognitions] = await Promise.all([
+        api.getCAFs(),
+        api.getImpacts(),
+        api.getRecognitions()
+      ]);
+      setCafs(fetchedCAFs);
+      setImpacts(fetchedImpacts);
+      setRecognitions(fetchedRecognitions);
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [user.uid]);
+
+  const pendingCAFs = cafs.filter(caf => caf.userId === user.uid && caf.status === 'PENDING_ASSOCIATE_SIG');
+  const myImpacts = impacts.filter(i => i.userId === user.uid).sort((a,b) => new Date(b.shiftDate).getTime() - new Date(a.shiftDate).getTime()).slice(0, 3);
+  const myRecognitions = recognitions.filter(r => r.userId === user.uid && r.isApproved).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -21,6 +58,26 @@ export function TeammateDashboard({ user }: { user: User }) {
 
   return (
     <div className="grid gap-6">
+      <div className="flex justify-end">
+        <Dialog open={isImpactOpen} onOpenChange={setIsImpactOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Report Impact
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Report Impact</DialogTitle>
+                </DialogHeader>
+                <ImpactForm 
+                    userId={user.uid} 
+                    userName={user.displayName}
+                    onSuccess={() => { setIsImpactOpen(false); fetchData(); }} 
+                />
+            </DialogContent>
+        </Dialog>
+      </div>
+
       {pendingCAFs.length > 0 && (
         <Card className="border-accent ring-4 ring-accent/20">
           <CardHeader>
@@ -34,8 +91,8 @@ export function TeammateDashboard({ user }: { user: User }) {
             {pendingCAFs.map(caf => (
               <div key={caf.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
                 <div>
-                  <h3 className="font-semibold">{caf.subject}</h3>
-                  <p className="text-sm text-muted-foreground">Created {formatDistanceToNow(caf.createdAt, { addSuffix: true })}</p>
+                  <h3 className="font-semibold">{caf.subject.replace(/_/g, ' ')}</h3>
+                  <p className="text-sm text-muted-foreground">Created {formatDistanceToNow(parseISO(caf.createdAt), { addSuffix: true })}</p>
                 </div>
                 <Button>Review & Sign</Button>
               </div>
