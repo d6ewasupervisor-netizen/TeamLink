@@ -42,7 +42,7 @@ export function AppSidebar({ user }: { user: User }) {
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <Logo className="w-8 h-8 text-primary" />
-          <h1 className="font-headline text-2xl font-semibold">TeamLink</h1>
+          <h1 className="font-headline text-2xl font-semibold">TAG</h1>
         </div>
       </SidebarHeader>
       <SidebarContent>

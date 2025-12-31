@@ -1,6 +1,6 @@
-# TeamLink
+# TAG
 
-A Next.js application for team management with impact reporting, recognition, and corrective action forms.
+Team Accountability Gateway - A Next.js application for team management with impact reporting, recognition, and corrective action forms.
 
 ## Setup Instructions
 
