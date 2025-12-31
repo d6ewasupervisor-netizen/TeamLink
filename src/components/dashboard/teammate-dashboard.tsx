@@ -3,7 +3,7 @@ import { mockCAFs, mockImpacts, mockRecognitions } from "@/lib/mock-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileSignature, Siren, Sparkles, TrendingUp } from "lucide-react";
+import { FileSignature, Siren, Sparkles } from "lucide-react";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 
 export function TeammateDashboard({ user }: { user: User }) {
@@ -55,7 +55,7 @@ export function TeammateDashboard({ user }: { user: User }) {
             {myImpacts.length > 0 ? myImpacts.map(impact => (
               <div key={impact.id} className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold capitalize">{impact.reason.toLowerCase().replace(/_/g, ' ')} on {format(parseISO(impact.shiftDate + 'T00:00:00.000Z'), 'MMM d')}</p>
+                  <p className="font-semibold capitalize">{impact.reason.toLowerCase().replace(/_/g, ' ')} on {format(parseISO(impact.shiftDate), 'MMM d')}</p>
                   <p className="text-sm text-muted-foreground line-clamp-1">{impact.details}</p>
                 </div>
                 <Badge variant={getStatusVariant(impact.status)}>{impact.status}</Badge>

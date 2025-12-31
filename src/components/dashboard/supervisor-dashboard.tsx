@@ -5,9 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Check, Clock, HeartHandshake, Users, X } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { parseISO } from 'date-fns';
 
 export function SupervisorDashboard({ user }: { user: User }) {
   const teamMembers = mockUsers.filter(u => u.supervisorId === user.uid);
@@ -48,7 +47,7 @@ export function SupervisorDashboard({ user }: { user: User }) {
             </CardContent>
         </Card>
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb_2">
                 <CardTitle className="text-sm font-medium">Pattern Alerts</CardTitle>
                 <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -80,7 +79,7 @@ export function SupervisorDashboard({ user }: { user: User }) {
                     </Avatar>
                     <div>
                         <p className="font-semibold">{impact.userName}</p>
-                        <p className="text-sm text-muted-foreground">{impact.reason} on {format(parseISO(impact.shiftDate + 'T00:00:00.000Z'), 'MMM d')}</p>
+                        <p className="text-sm text-muted-foreground">{impact.reason} on {format(parseISO(impact.shiftDate), 'MMM d')}</p>
                     </div>
                   </div>
                    <p className="text-sm text-muted-foreground pl-13">{impact.details}</p>
