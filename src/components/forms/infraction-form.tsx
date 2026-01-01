@@ -3,12 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { format } from "date-fns"
-import { CalendarIcon, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import {
   Form,
   FormControl,
@@ -19,11 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -33,7 +26,6 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 import { InfractionType, User } from "@/lib/types"
 import { api } from "@/services/api"
 
@@ -44,9 +36,18 @@ const formSchema = z.object({
   type: z.nativeEnum(InfractionType, {
     required_error: "Please select an infraction type.",
   }),
-  occurredAt: z.date({
-    required_error: "Date and time is required.",
+  occurredDate: z.string({
+    required_error: "Date is required.",
+  }).regex(/^\d{4}-\d{2}-\d{2}$/, {
+    message: "Please enter a valid date in YYYY-MM-DD format.",
   }),
+  occurredTime: z
+    .string({
+      required_error: "Time is required.",
+    })
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, {
+      message: "Enter time as HH:MM (24-hour).",
+    }),
   location: z.string().optional(),
   details: z.string().min(10, {
     message: "Details must be at least 10 characters.",
@@ -76,8 +77,12 @@ export function InfractionForm({ reporterId, reporterName, onSuccess }: Infracti
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      details: "",
+      employeeId: undefined,
+      type: undefined,
+      occurredDate: "",
+      occurredTime: "",
       location: "",
+      details: "",
     },
   })
 
@@ -87,13 +92,17 @@ export function InfractionForm({ reporterId, reporterName, onSuccess }: Infracti
       const employee = employees.find(u => u.uid === values.employeeId)
       if (!employee) throw new Error("Employee not found")
 
+      const [hours, minutes] = values.occurredTime.split(":").map(Number)
+      const occurredAt = new Date(values.occurredDate)
+      occurredAt.setHours(hours, minutes, 0, 0)
+
       await api.createInfraction({
         userId: values.employeeId,
         userName: employee.displayName,
         reportedByUid: reporterId,
         reportedByName: reporterName,
         type: values.type,
-        occurredAt: values.occurredAt.toISOString(),
+        occurredAt: occurredAt.toISOString(),
         location: values.location,
         details: values.details,
       })
@@ -170,45 +179,37 @@ export function InfractionForm({ reporterId, reporterName, onSuccess }: Infracti
 
         <FormField
           control={form.control}
-          name="occurredAt"
+          name="occurredDate"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date & Time</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP HH:mm")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                  {/* Note: Standard Calendar component doesn't handle time. 
-                      For now we just capture date. Enhancing to DateTime picker would be better later.
-                      I'll just assume start of day or use current time if needed, but for "Doing things" date is key.
-                  */}
-                </PopoverContent>
-              </Popover>
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  max={new Date().toISOString().split('T')[0]}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="occurredTime"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Time</FormLabel>
+              <FormControl>
+                <Input
+                  type="time"
+                  step={300}
+                  placeholder="HH:MM"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>Use local time the infraction occurred.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

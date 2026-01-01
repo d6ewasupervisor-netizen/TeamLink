@@ -3,11 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { format } from "date-fns"
-import { CalendarIcon, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import {
   Form,
   FormControl,
@@ -18,11 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -30,15 +23,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 import { CallOutReason } from "@/lib/types"
 import { api } from "@/services/api"
 import { useState } from "react"
 
 const formSchema = z.object({
-  shiftDate: z.date({
+  shiftDate: z.string({
     required_error: "A shift date is required.",
+  }).regex(/^\d{4}-\d{2}-\d{2}$/, {
+    message: "Please enter a valid date in YYYY-MM-DD format.",
   }),
   reason: z.nativeEnum(CallOutReason, {
     required_error: "Please select a reason.",
@@ -58,6 +53,8 @@ export function ImpactForm({ userId, userName, onSuccess }: ImpactFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      shiftDate: "",
+      reason: undefined,
       details: "",
     },
   })
@@ -68,7 +65,7 @@ export function ImpactForm({ userId, userName, onSuccess }: ImpactFormProps) {
       await api.createImpact({
         userId,
         userName,
-        shiftDate: format(values.shiftDate, 'yyyy-MM-dd'),
+        shiftDate: values.shiftDate,
         reason: values.reason,
         details: values.details || "",
       })
@@ -97,39 +94,14 @@ export function ImpactForm({ userId, userName, onSuccess }: ImpactFormProps) {
           control={form.control}
           name="shiftDate"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
+            <FormItem>
               <FormLabel>Shift Date</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <FormControl>
+                <Input
+                  type="date"
+                  {...field}
+                />
+              </FormControl>
               <FormDescription>
                 The date of the shift you will be missing or late for.
               </FormDescription>
