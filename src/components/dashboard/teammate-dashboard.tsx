@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileSignature, Siren, Sparkles, Plus } from "lucide-react";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ImpactForm } from "@/components/forms/impact-form";
 import { useToast } from "@/hooks/use-toast";
 
@@ -68,6 +68,9 @@ export function TeammateDashboard({ user }: { user: User }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Report Impact</DialogTitle>
+                    <DialogDescription>
+                        Report a schedule impact or absence for your upcoming shift.
+                    </DialogDescription>
                 </DialogHeader>
                 <ImpactForm 
                     userId={user.uid} 

@@ -9,7 +9,7 @@ import { AlertTriangle, Check, Clock, HeartHandshake, Users, X, RefreshCw, Plus,
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ImpactForm } from "@/components/forms/impact-form";
 import { InfractionForm } from "@/components/forms/infraction-form";
 import { RecognitionForm } from "@/components/forms/recognition-form";
@@ -117,6 +117,9 @@ export function SupervisorDashboard({ user }: { user: User }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Report Impact</DialogTitle>
+                    <DialogDescription>
+                        Report a schedule impact or absence for yourself or a team member.
+                    </DialogDescription>
                 </DialogHeader>
                 <ImpactForm 
                     userId={user.uid} // Reporting for self or others? Form currently takes userId.
@@ -144,6 +147,9 @@ export function SupervisorDashboard({ user }: { user: User }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Report Infraction</DialogTitle>
+                    <DialogDescription>
+                        Document an attendance or conduct violation that occurred.
+                    </DialogDescription>
                 </DialogHeader>
                 <InfractionForm 
                     reporterId={user.uid} 
@@ -162,6 +168,9 @@ export function SupervisorDashboard({ user }: { user: User }) {
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Create Corrective Action Form</DialogTitle>
+                    <DialogDescription>
+                        Create a formal corrective action document for policy violations or attendance issues.
+                    </DialogDescription>
                 </DialogHeader>
                 <CAFForm 
                     supervisorId={user.uid} 
@@ -180,6 +189,9 @@ export function SupervisorDashboard({ user }: { user: User }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Submit Recognition</DialogTitle>
+                    <DialogDescription>
+                        Recognize a team member for exceptional performance or positive contributions.
+                    </DialogDescription>
                 </DialogHeader>
                 <RecognitionForm 
                     submitterId={user.uid} 
