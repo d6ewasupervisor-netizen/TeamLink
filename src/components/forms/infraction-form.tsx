@@ -62,6 +62,7 @@ interface InfractionFormProps {
 export function InfractionForm({ reporterId, reporterName, onSuccess }: InfractionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [employees, setEmployees] = useState<User[]>([])
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -174,7 +175,7 @@ export function InfractionForm({ reporterId, reporterName, onSuccess }: Infracti
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Date & Time</FormLabel>
-              <Popover>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
@@ -197,7 +198,15 @@ export function InfractionForm({ reporterId, reporterName, onSuccess }: Infracti
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      if (!date) return
+                      // Use RHF setValue to ensure state updates and validation run
+                      form.setValue("occurredAt", date, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                      setIsCalendarOpen(false)
+                    }}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
                     }
