@@ -54,6 +54,7 @@ interface ImpactFormProps {
 
 export function ImpactForm({ userId, userName, onSuccess }: ImpactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,10 +100,11 @@ export function ImpactForm({ userId, userName, onSuccess }: ImpactFormProps) {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Shift Date</FormLabel>
-              <Popover>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      type="button"
                       variant={"outline"}
                       className={cn(
                         "w-full pl-3 text-left font-normal",
@@ -122,7 +124,15 @@ export function ImpactForm({ userId, userName, onSuccess }: ImpactFormProps) {
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      if (!date) return
+                      // Use RHF setValue to ensure state updates and validation run
+                      form.setValue("shiftDate", date, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                      setIsCalendarOpen(false)
+                    }}
                     disabled={(date) =>
                       date < new Date("1900-01-01")
                     }
